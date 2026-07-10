@@ -75,7 +75,23 @@ fn handle_client(mut stream: TcpStream){
         
     }
 
-//set_database Function
+//handle_post_request function
+fn handle_post_request(request: &str) -> (String, String){
+    match (get_user_resquest_body(&request), Client::connect(DB_URL, NoTls)){
+        (OK(user), Ok(mut client)) => {
+            client
+            .execute(
+          "INSERT INTO users (name, email) VALUES ($1, $2)",
+          &[user.name, &user.email]
+        ).unwrap();
+
+        (OK_RESPONSE.to_string(), "User Create".to_string())
+        }
+        _ => (INTERNAL_SERVER_ERROR.to_string(), "Error".to_string()),
+    }
+}
+
+    //set_database Function
 fn set_database() -> Resul<(), PostgresError> {
     //connect to db
     let mut client = Client::connect(DB_URL, NoTls)?;
