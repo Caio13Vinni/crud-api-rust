@@ -9,7 +9,7 @@ extern crate serde_derive;
 
 //Modelo de Estrutura: id, name, email
 #[derive(Serialize, Deserialize)]
-struct user {
+struct User {
     id: Option<i32>,
     name: String,
     email: String,
@@ -31,6 +31,12 @@ fn main(){
         println!("Error {}", e);
         return;
     }
+
+    //start server e print porta
+    let listener = TcpListener::bind(format!(0.0.0.0:8080)).unwrap();
+    println!("Server Start port at 8080");
+
+
 }
 
 //set_database Function
