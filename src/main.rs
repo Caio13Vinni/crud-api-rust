@@ -134,6 +134,29 @@ fn handle_get_all_request(_request: &str) -> (String, String) {
     }    
 }
 
+//handle_put_request function 
+fn handle_put_request(request: &str) -> (String, String){
+    match
+    (
+        get_id(&request).parse::<i32>(),
+        get_user_request_body(&request),
+        Client::connect(DB_URL, NoTls),
+    )
+    {
+        (Ok(id), Ok(user),Ok(mut client)) => {
+            client
+                .execute(
+                    "UPDATE users SET name = $1, email = $2 WHERE id = $3",
+                    &[&user.name, &user.email, &id]
+                )
+                .unwrap();
+
+            (OK_RESPONSE.to_string(), "Users update".to_string())
+        }
+        _ => (INTERNAL_SERVER_ERROR.to_string(), "Error".to_string())
+        }
+}
+
     //set_database Function
 fn set_database() -> Resul<(), PostgresError> {
     //connect to db
@@ -156,6 +179,6 @@ fn get_id(request: &str) -> &str {
 }
 
 //desserialize user from request body with the id 
-fn get_user_resquest_body(request: &str) -> Result<user, serde_json::Error>{
+fn get_user_request_body(request: &str) -> Result<user, serde_json::Error>{
     serde_json::from_str(request.split("\r\n\r\n").last().unwrap_or_default())
 }
