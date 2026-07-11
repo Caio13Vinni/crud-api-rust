@@ -110,6 +110,29 @@ fn handle_get_request(request: &str) -> (String, String) {
     }
     
 }
+// handle_get_all_request function
+fn handle_get_all_request(_request: &str) -> (String, String) {
+    match Client::connect(DB_URL, NoTls) {
+        Ok(mut client) => {
+            let mut users = Vec::new();
+
+            if let Ok(rows) = client.query("SELECT * FROM users", &[]) {
+                for row in rows {
+                    users.push(User {
+                        id: row.get(0),
+                        name: row.get(1),
+                        email: row.get(2),
+                    });
+                }
+                
+                (OK_RESPONSE.to_string(), serde_json::to_string(&users).unwrap())
+            } else {
+                (INTERNAL_SERVER_ERROR.to_string(), "Erro na consulta ao banco".to_string())
+            }
+        }
+        Err(_) => (INTERNAL_SERVER_ERROR.to_string(), "Erro de conexão".to_string()),
+    }    
+}
 
     //set_database Function
 fn set_database() -> Resul<(), PostgresError> {
