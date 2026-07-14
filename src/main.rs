@@ -1,8 +1,8 @@
 use postgres::Error as PostgresError;
 use postgres::{Client, NoTls};
+use std::env;
 use std::io::{Read, Write};
 use std::net::{TcpListener, TcpStream};
-use std::{env};
 
 #[macro_use]
 extern crate serde_derive;
@@ -17,8 +17,7 @@ struct User {
 
 // DB_url
 fn db_url() -> String {
-    env::var("DATABASE_URL")
-        .expect("DATABASE_URL não definida")
+    env::var("DATABASE_URL").expect("DATABASE_URL não definida")
 }
 
 //CONSTANTES
@@ -106,10 +105,7 @@ fn handle_get_request(request: &str) -> (String, String) {
         Client::connect(&db_url(), NoTls),
     ) {
         (Ok(id), Ok(mut client)) => {
-            match client.query_one(
-                "SELECT id, name, email FROM users WHERE id = $1",
-                &[&id],
-            ) {
+            match client.query_one("SELECT id, name, email FROM users WHERE id = $1", &[&id]) {
                 Ok(row) => {
                     let user = User {
                         id: Some(row.get(0)),
@@ -122,17 +118,11 @@ fn handle_get_request(request: &str) -> (String, String) {
                         serde_json::to_string(&user).unwrap(),
                     )
                 }
-                Err(_) => (
-                    NOT_FOUND.to_string(),
-                    "User not found".to_string(),
-                ),
+                Err(_) => (NOT_FOUND.to_string(), "User not found".to_string()),
             }
         }
 
-        _ => (
-            INTERNAL_SERVER_ERROR.to_string(),
-            "Error".to_string(),
-        ),
+        _ => (INTERNAL_SERVER_ERROR.to_string(), "Error".to_string()),
     }
 }
 // handle_get_all_request function
