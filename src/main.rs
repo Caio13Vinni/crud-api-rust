@@ -16,7 +16,7 @@ struct User {
 }
 
 // DB_url
-const DB_URL : &str = !env("DATABASE_URL");
+const DB_URL : &str = env!("DATABASE_URL");
 
 //CONSTANTES    
 
@@ -155,6 +155,26 @@ fn handle_put_request(request: &str) -> (String, String){
         }
         _ => (INTERNAL_SERVER_ERROR.to_string(), "Error".to_string())
         }
+}
+
+//handle_delete_request function
+fn handle_delete_request(request: &str) -> (String, String) {
+    match (get_id(&request).parse::<i32>(), Client::connect(DB_URL, NoTls)) {
+        (Ok(id), Ok(mut client)) => {
+            client
+                .execute(
+                    "DELETE FROM users WHERE id = $1",
+                    &[&id],
+                )
+                .unwrap();
+
+            (OK_RESPONSE.to_string(), "User Delete".to_string())
+        }
+        _ => (
+            INTERNAL_SERVER_ERROR.to_string(),
+            "ERROR".to_string(),
+        ),
+    }
 }
 
     //set_database Function
